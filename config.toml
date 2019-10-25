@@ -1,0 +1,80 @@
+
+queue_buffer_size = 8 # this is the size of Queue buffered channel
+debug_level_not = 2 # this control the debug level, the higher the number, less the log
+
+# Define Log Sources
+    [[log_sources]]
+    name = "sample_csv" # each log sourse needs to have a unique name
+    type = "file" # Possible Values: file, stdin
+    path = "example/sample_csv.txt" # required if type is "file"
+    disabled = false # if disabled, the sources is not used
+    [log_sources.settings]
+    format = "csv" # possible values: "csv"
+    # headers = ["remotehost","rfc931","authuser","date","request","status","bytes"] # not needed if 'firstline_is_header' is set to true
+    timestamp_key = "date" # the name of the data key (column) that has the timestamp value
+    timestamp_format = "unix" # the format in which the timestamp is. Possible values: "unix"
+    use_firstline_as_header = true # if set to true, first line from the source will be expected to be headers
+
+    [[log_sources]]
+    name = "sample_stdin"
+    type = "stdin"
+    disabled = true
+    [log_sources.settings]
+    format = "csv"
+    headers = ["remotehost","rfc931","authuser","date","request","status","bytes"]
+    timestamp_key = "date"
+    timestamp_format = "unix"
+    use_firstline_as_header = false
+
+# Define Stats
+[stats]
+    [[stats.types]]
+    name = "Section most hits" # Each Consumer needs to have a name/reference
+    duration_seconds = 10 # the duration of the discrete time windows in which we measure stats
+    disabled = false # if we should just ignore this stats type
+    
+    # Consumers need to understand the log data, hence a mapping of setting that 
+    # connects consumers to source and lets them handle some processing. We need one setting for each
+    # source that the consumer wants data from.
+    [[stats.types.source_settings]] 
+        name = "sample_csv"
+        key = "request" # the key we're using as our primary filter for breaking down counts
+        value_mutator_func = "HTTPStatusLineToSection" # possible value 'HTTPStatusLineToSection', which maps to a function in the code
+        other_keys = ["remotehost","authuser","status"] # secondary keys on which we should break down our counts data
+    [[stats.types.source_settings]]
+        name = "stdin"
+        key = "request"
+        value_mutator_func = "HTTPStatusLineToSection"
+        other_keys = ["remotehost","authuser","status"]
+
+# Define Alerts
+[alert]
+    [[alert.types]]
+    name = "High traffic" # Name of the alert type
+    duration_seconds = 10 # Timespan that we care about while keeping track of counts
+    threshold = 60 # number which is if exceeded by counts per duration, an Alert is triggered
+    disabled = true
+    [[alert.types.source_settings]]
+        name = "sample_csv"
+        key = "" # this can be empty, which means we don't care about what key
+        value_mutator_func = "" # values here can map to funcs in the code
+    [[alert.types.source_settings]]
+        name = "sample_csv_short"
+        key = ""
+        value_mutator_func = ""
+
+    [[alert.types]]
+    name = "High API Traffic"
+    duration_seconds = 120
+    threshold = 10
+    disabled = true
+    [[alert.types.source_settings]]
+        name = "sample_csv"
+        key = "request"
+        value_mutator_func = "HTTPStatusLineToSection"
+        values = ["/api"]
+    [[alert.types.source_settings]]
+        name = "sample_csv_short"
+        key = "request"
+        value_mutator_func = "HTTPStatusLineToSection"
+        values = ["/api"]
