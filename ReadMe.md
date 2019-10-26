@@ -76,7 +76,7 @@ Logdog is a log ingestor built for fun. It is an executable program that can ing
 
 In short, all we're doing is: 1) Read Log Message (a single log line) from Log Sources (e.g. a particular csv file). 2) Push each Log Message into a Queue (buffered channel). 3) Processor picks up the Log Message from the Queue, and parses parse it (extract timestamp, key-value pairs etc.) and converts it into a Structured Log Message. 4) It then sends the Structured Log Message to the channels of all Log Consumers (stats, alerts handlers) that want to consume this Log Message. 5) Log Consumers handle the Log Message, keep temporary counts of things to do things like printing periodic stats, alerts etc.
 
-[Image]
+![Flow Diagram](https://i.imgur.com/sp5i2iJ.png)
 
 ## Getting Started
 
