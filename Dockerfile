@@ -1,6 +1,6 @@
 FROM golang:latest
 
-LABEL maintainer="logdog@teejays.me"
+LABEL maintainer="logdog@teejay.me"
 
 RUN mkdir -p /app
 WORKDIR /app
